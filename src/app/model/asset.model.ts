@@ -1,3 +1,4 @@
+import { AssetEntry } from "./asset-entry.model";
 import { Model } from "./model";
 
 
@@ -8,5 +9,6 @@ export enum Currency{
 
 export interface Asset extends Model{
     name:string;
-    currency:Currency
+    currency:Currency,
+    entries?:AssetEntry[];
 }
