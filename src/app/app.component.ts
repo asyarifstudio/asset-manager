@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -9,8 +10,9 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   title = 'asset-manager';
   
-
+  $login:Observable<boolean>
   constructor(public auth:AuthService){
+    this.$login = this.auth.$isLogin
   }
 
   

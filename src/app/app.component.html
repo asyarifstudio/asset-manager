@@ -1,2 +1,3 @@
-<app-login *ngIf="(auth.isLogin() | async)"></app-login>
-<router-outlet *ngIf="!(auth.isLogin() | async)"></router-outlet>
+<app-header></app-header>
+<app-login *ngIf="!($login | async)"></app-login>
+<router-outlet *ngIf="$login | async"></router-outlet>
