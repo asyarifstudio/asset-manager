@@ -1,0 +1,27 @@
+<div class="container-fluid" *ngIf="assets else loading">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Aset</th>
+                <th>Satuan</th>
+            </tr>
+           
+        </thead>
+        <tbody>
+            <tr *ngFor="let asset of assets;index as i">
+                <td>{{i + 1}}</td>
+                <td>{{asset.name}}</td>
+                <td>{{asset.currency}}</td>
+                <td>
+                    <button class="btn btn-sm btn-light" ngbTooltip="Tambah Entry" (click)="onAddEntry(asset)"><i class="bi bi-plus-circle"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<ng-template #loading>
+    loading
+</ng-template>

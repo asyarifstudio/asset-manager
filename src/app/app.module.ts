@@ -12,12 +12,14 @@ import { LoginComponent } from './components/login/login.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { HeaderComponent } from './components/header/header.component';
 import { FormsModule } from '@angular/forms';
+import { HomeComponent } from './routes/home/home.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    HeaderComponent
+    HeaderComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
