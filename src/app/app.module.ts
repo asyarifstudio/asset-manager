@@ -11,6 +11,7 @@ import { provideFirestore,getFirestore } from '@angular/fire/firestore';
 import { LoginComponent } from './components/login/login.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { HeaderComponent } from './components/header/header.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { HeaderComponent } from './components/header/header.component';
     BrowserModule,
     AppRoutingModule,
     NgbModule,
+    FormsModule,
     AngularFireModule.initializeApp(environment.firebase)
   ],
   providers: [],
