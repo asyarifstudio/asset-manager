@@ -103,6 +103,16 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "prerender": false,
+            "ssr": false,
+            "browserTarget": "asset-manager:build:production",
+            "firebaseProject": "asset-manager-8bec1",
+            "firebaseHostingSite": "asset-manager-8bec1"
+          }
         }
       }
     }
