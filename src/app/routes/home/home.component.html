@@ -6,8 +6,8 @@
                 <th>Nama Aset</th>
                 <th>Satuan</th>
                 <th>Pilihan</th>
-                <ng-container *ngFor="let tableEntry of tableEntries">
-                    <th>{{tableEntry.year}} - {{tableEntry.month}}</th>
+                <ng-container *ngFor="let column of tableColumn">
+                    <th>{{column.year}} - {{column.month}}</th>
                 </ng-container>
             </tr>
 
@@ -21,8 +21,8 @@
                     <button class="btn btn-sm btn-light" ngbTooltip="Tambah Entry"
                         (click)="onAddEntry(asset,addentry)"><i class="bi bi-plus-circle"></i></button>
                 </td>
-                <ng-container *ngFor="let tableEntry of tableEntries">
-                   <td> {{getAmount(asset,tableEntry) | currency:asset.currency:'symbol-narrow'}}</td>
+                <ng-container *ngFor="let column of tableColumn">
+                   <td class="entry" (click)="onEdit(asset,column,addentry)"> {{getAmount(asset,column) | currency:asset.currency:'symbol-narrow'}}</td>
                 </ng-container>
             </tr>
         </tbody>
@@ -36,7 +36,7 @@
 
 <ng-template #addentry let-modal>
     <div class="modal-header">
-        <h4 class="modal-title" id="modal-basic-title">Tambah Entry {{currentAsset.name}}</h4>
+        <h4 class="modal-title" id="modal-basic-title">{{modalTitle}}</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
     </div>
     <div class="modal-body">

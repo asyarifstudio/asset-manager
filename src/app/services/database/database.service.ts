@@ -38,9 +38,19 @@ export class DatabaseService {
     return data as AssetEntry;
   }
 
+  async updateEntry(asset:Asset,entryId:string,entry:AssetEntry):Promise<AssetEntry>{
+    delete entry.id;
+    const doc = this.firestore.doc<AssetEntry>(`users/${this.auth.user.id}/assets/${asset.id!}/entries/${entryId}`);
+    await doc.set(entry);
+    const data = await firstValueFrom(doc.valueChanges({idField:"id"}));
+    return data as AssetEntry;
+  }
+
   getEntries(asset:Asset):Observable<AssetEntry[]>{
     const coll = this.firestore.collection<AssetEntry>(`users/${this.auth.user.id}/assets/${asset.id!}/entries`)
     return coll.valueChanges({idField:"id"})
   }
+
+
 
 }
