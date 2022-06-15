@@ -149,7 +149,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       return currentcolumn.rows.get(asset.id!)!.amount
     }
     else{
-      return '-'
+      return ''
     }
 
   }
