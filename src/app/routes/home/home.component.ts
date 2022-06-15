@@ -34,8 +34,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private database: DatabaseService,
     private modal: NgbModal) {
 
-
-    this.initTableEntry();
+    this.subs.push(
+      this.database.$valueChanges.subscribe(()=>{
+        this.initTableEntry();
+      })
+    )
     this.initEntry();
 
   }
@@ -116,7 +119,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.modal.open(content).result.then(async () => {
       if (this.currentEntry.amount > 0) {
         await this.database.addEntry(this.currentAsset, this.currentEntry);
-        this.initTableEntry();
       }
     }, (error) => {
 
@@ -136,7 +138,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.modal.open(content).result.then(async()=>{
       await this.database.updateEntry(this.currentAsset,entryId,this.currentEntry);
-      this.initTableEntry();
     },(error)=>{
 
     })

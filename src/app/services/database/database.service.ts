@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { Asset } from 'src/app/model/asset.model';
 import { AuthService } from '../auth/auth.service';
 import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/compat/firestore';
-import { concatMap, firstValueFrom, map, Observable } from 'rxjs';
+import { BehaviorSubject, concatMap, firstValueFrom, map, Observable } from 'rxjs';
 import { AssetEntry } from 'src/app/model/asset-entry.model';
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseService {
+
+  $valueChanges:BehaviorSubject<any> = new BehaviorSubject({});
 
   constructor(private auth:AuthService, private firestore:AngularFirestore) { 
 
@@ -26,6 +28,7 @@ export class DatabaseService {
     const result = await coll.add(asset);
     const doc = this.firestore.doc(`users/${this.auth.user.id}/assets/${result.id}`);
     const data = await firstValueFrom(doc.valueChanges({idField:"id"}));
+    this.$valueChanges.next({})
     return data as Asset;
   }
 
@@ -35,6 +38,7 @@ export class DatabaseService {
     const result = await coll.add(entry);
     const doc = this.firestore.doc(`users/${this.auth.user.id}/assets/${asset.id!}/entries/${result.id}`);
     const data = await firstValueFrom(doc.valueChanges({idField:"id"}));
+    this.$valueChanges.next({})
     return data as AssetEntry;
   }
 
@@ -43,6 +47,7 @@ export class DatabaseService {
     const doc = this.firestore.doc<AssetEntry>(`users/${this.auth.user.id}/assets/${asset.id!}/entries/${entryId}`);
     await doc.set(entry);
     const data = await firstValueFrom(doc.valueChanges({idField:"id"}));
+    this.$valueChanges.next({})
     return data as AssetEntry;
   }
 
