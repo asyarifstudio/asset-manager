@@ -16,9 +16,16 @@ export class DatabaseService {
   }
 
 
-  getAssets(includeEntry:boolean=false):Observable<Asset[]>{
+  async getAssets(includeEntry:boolean=false):Promise<Asset[]>{
     const coll = this.firestore.collection<Asset>(`users/${this.auth.user.id}/assets`)
-    return coll.valueChanges({idField:"id"})
+    const result:Asset[] = await firstValueFrom(coll.valueChanges({idField:"id"}))
+
+    if(includeEntry){
+      for(let item of result){
+        item.entries = await this.getEntries(item);
+      }
+    }
+    return result;
     
   }
 
@@ -51,11 +58,11 @@ export class DatabaseService {
     return data as AssetEntry;
   }
 
-  getEntries(asset:Asset):Observable<AssetEntry[]>{
+  getEntries(asset:Asset):Promise<AssetEntry[]>{
     const coll = this.firestore.collection<AssetEntry>(`users/${this.auth.user.id}/assets/${asset.id!}/entries`)
-    return coll.valueChanges({idField:"id"})
+    return firstValueFrom(coll.valueChanges({idField:"id"}))
   }
 
-
+  
 
 }

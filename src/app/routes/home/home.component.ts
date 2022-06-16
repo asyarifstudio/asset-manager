@@ -75,12 +75,11 @@ export class HomeComponent implements OnInit, OnDestroy {
             this.SGD_TO_IDR = await this.converter.getRate(Currency.SGD,Currency.IDR);
         }
 
-        const assets:Asset[] = await firstValueFrom(this.database.getAssets());
+        const assets:Asset[] = await this.database.getAssets(true);
 
         for (let asset of assets) {
-            asset.entries = await firstValueFrom(this.database.getEntries(asset));
             //for each of the entry in the asset, loop through it to add to table entry
-            for (let entry of asset.entries) {//#loop 1{
+            for (let entry of asset.entries!) {//#loop 1{
                 let found: boolean = false;
                 //search in the table entry if date already available
                 for (let column of this.tableColumn) {//#loop 2{
