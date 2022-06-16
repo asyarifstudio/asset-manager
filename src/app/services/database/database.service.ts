@@ -17,7 +17,8 @@ export class DatabaseService {
 
 
   async getAssets(includeEntry:boolean=false):Promise<Asset[]>{
-    const coll = this.firestore.collection<Asset>(`users/${this.auth.user.id}/assets`)
+    const coll = this.firestore.collection<Asset>(`users/${this.auth.user.id}/assets`,ref=>ref.orderBy('name'))
+    
     const result:Asset[] = await firstValueFrom(coll.valueChanges({idField:"id"}))
 
     if(includeEntry){
