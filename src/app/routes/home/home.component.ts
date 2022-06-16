@@ -144,16 +144,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         })
     }
 
-    getAmount(asset: Asset, currentcolumn: TableColumn) {
+    getAmount(asset: Asset, currentcolumn: AssetMonthlySummary) {
         //search table entry
-        if (currentcolumn.rows.has(asset.id!)) {
-            return currentcolumn.rows.get(asset.id!)!.amount
+        if (currentcolumn.assetValue.has(asset.id!)) {
+            return currentcolumn.assetValue.get(asset.id!)!.amount
         }
         else {
             return ''
         }
 
     }
-
  
 }
