@@ -29,6 +29,17 @@ export class DatabaseService {
     
   }
 
+  async getAsset(id:string,includeEntry:boolean=false):Promise<Asset>{
+    const doc = this.firestore.doc<Asset>(`users/${this.auth.user.id}/assets/${id}`);
+    let asset:Asset = await firstValueFrom(doc.valueChanges({idField:"id"})) as Asset;
+
+    if(includeEntry){
+      asset.entries = await this.getEntries(asset);
+    }
+
+    return asset;
+  }
+
   async createAsset(asset:Asset):Promise<Asset>{
     asset.createdAt = asset.updatedAt = Date.now();
     const coll = this.firestore.collection(`users/${this.auth.user.id}/assets`)
@@ -63,6 +74,6 @@ export class DatabaseService {
     return firstValueFrom(coll.valueChanges({idField:"id"}))
   }
 
-  
+
 
 }

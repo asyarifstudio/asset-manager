@@ -14,7 +14,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let asset of assets;index as i" (click)="onSelectAsset(asset)">
+            <tr class="pointer" *ngFor="let asset of assets;index as i" (click)="onSelectAsset(asset)">
                 <td>{{i+1}}</td>
                 <td>{{asset.name}}</td>
                 <td>{{asset.currency}}</td>

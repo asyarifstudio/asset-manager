@@ -17,6 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
 import { MainChartComponent } from './components/main-chart/main-chart.component';
 import { AssetComponent } from './routes/asset/asset.component';
+import { AssetViewComponent } from './routes/asset-view/asset-view.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -24,7 +25,8 @@ import { AssetComponent } from './routes/asset/asset.component';
     HeaderComponent,
     HomeComponent,
     MainChartComponent,
-    AssetComponent
+    AssetComponent,
+    AssetViewComponent
   ],
   imports: [
     BrowserModule,

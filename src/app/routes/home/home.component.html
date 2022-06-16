@@ -25,6 +25,7 @@
                 <td>
                     <button class="btn btn-sm btn-light" ngbTooltip="Tambah Entry"
                         (click)="onAddEntry(asset,addentry)"><i class="bi bi-plus-circle"></i></button>
+                    <a  ngbTooltip="Edit Aset" [routerLink]="['aset',asset.id!]" class="btn btn-sm btn-light"><i class="bi bi-pen"></i></a>
                 </td>
                 <ng-container *ngFor="let column of assetSummary?.monthly">
                     <td class="entry" (click)="onEdit(asset,column,addentry)"> {{column.assetValue.get(asset.id!)?.amount|

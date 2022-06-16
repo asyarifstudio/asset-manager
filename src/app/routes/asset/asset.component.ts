@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { Asset, Currency } from 'src/app/model/asset.model';
@@ -14,7 +15,7 @@ export class AssetComponent implements OnInit,OnDestroy {
   assets!:Asset[]
   asset:Asset;
   subs:Subscription[] = []
-  constructor(private database:DatabaseService,private modal:NgbModal) { 
+  constructor(private database:DatabaseService,private modal:NgbModal,private router:Router) { 
     this.asset = {
       name:"",
       currency:Currency.IDR
@@ -52,7 +53,7 @@ export class AssetComponent implements OnInit,OnDestroy {
   }
 
   onSelectAsset(asset:Asset){
-    
+    this.router.navigate(['aset',asset.id])
   }
 
 }
