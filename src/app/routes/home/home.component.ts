@@ -7,6 +7,8 @@ import { AssetEntry } from 'src/app/model/asset-entry.model';
 import { Asset, Currency } from 'src/app/model/asset.model';
 import { ConverterService } from 'src/app/services/converter/converter.service';
 import { DatabaseService } from 'src/app/services/database/database.service';
+import { AssetMonthlySummary, AssetSummary } from 'src/app/services/util/asset-summary';
+import { UtilService } from 'src/app/services/util/util.service';
 
 
 interface RowData {
@@ -39,13 +41,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     subs: Subscription[] = [];
     currentAsset!: Asset;
     currentEntry!: AssetEntry;
-    tableColumn: TableColumn[] = [];
+    assetSummary?: AssetSummary;
     modalTitle: string = ""
     yearSpans: YearSpan[] = [];
     SGD_TO_IDR:number=0;
     constructor(private database: DatabaseService,
         private modal: NgbModal,
-        private converter:ConverterService) {
+        private converter:ConverterService,
+        private util:UtilService) {
         
 
         this.subs.push(
@@ -68,65 +71,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     async initTableEntry() {
         this.assets = undefined;
-        this.tableColumn = [];
         this.yearSpans = [];
 
-        if(this.SGD_TO_IDR==0){
-            this.SGD_TO_IDR = await this.converter.getRate(Currency.SGD,Currency.IDR);
-        }
 
         const assets:Asset[] = await this.database.getAssets(true);
-
-        for (let asset of assets) {
-            //for each of the entry in the asset, loop through it to add to table entry
-            for (let entry of asset.entries!) {//#loop 1{
-                let found: boolean = false;
-                //search in the table entry if date already available
-                for (let column of this.tableColumn) {//#loop 2{
-                    //table entry available, just add in the entry row
-                    if (entry.month == column.month && entry.year == column.year) {
-                        column.rows.set(asset.id!, { id: entry.id!, amount: entry.amount })
-                        if(asset.currency == Currency.SGD){
-                            column.total += (entry.amount * this.SGD_TO_IDR);
-                        }
-                        else{
-                            column.total += (entry.amount);
-                        }
-                        
-                        found = true;
-                        break;//stop #loop 2
-                    }
-                }
-
-                if (!found) {
-                    let map = new Map<string, RowData>();
-                    map.set(asset.id!, { id: entry.id!, amount: entry.amount });
-                    let total:number = entry.amount;
-                    if(asset.currency == Currency.SGD){
-                        total = total*this.SGD_TO_IDR;
-                    }
-                    //not found in the table entry,create new table Entry
-                    this.tableColumn.push({
-                        year: entry.year,
-                        month: entry.month,
-                        rows: map,
-                        total
-                    })
-                }
-            }
-        }
-        //after this, sort the table entry based on the year and month;
-        this.tableColumn = this.tableColumn.sort((a, b) => {
-            if (a.year != b.year) {
-                return b.year - a.year;
-            }
-            else {
-                return b.month - a.month;
-            }
-        })
-
+        this.assetSummary = await this.util.summarizeAsset(assets);
+      
         //create yearspan for the table
-        for (let column of this.tableColumn) {
+        for (let column of this.assetSummary.monthly) {
             let found: boolean = false;
             for (let yearSpan of this.yearSpans) {
                 if (yearSpan.year == column.year) {
@@ -172,15 +124,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     }
 
-    onEdit(asset: Asset, column: TableColumn, content: any) {
+    onEdit(asset: Asset, column: AssetMonthlySummary, content: any) {
         this.currentAsset = asset;
         this.modalTitle = `Edit Entry ${asset.name}`
         this.currentEntry = {
             year: column.year,
             month: column.month,
-            amount: column.rows.get(asset.id!)?.amount!
+            amount: column.assetValue.get(asset.id!)?.amount!
         }
-        const entryId: string = column.rows.get(asset.id!)?.id!;
+        const entryId: string = column.assetValue.get(asset.id!)?.id!;
 
         this.modal.open(content).result.then(async () => {
             await this.database.updateEntry(this.currentAsset, entryId, this.currentEntry);
@@ -200,38 +152,18 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     }
 
-    getMonth(month: number) {
-        let result: string = "";
-
-        switch (month) {
-            case 0: result = "Januari"; break;
-            case 1: result = "Februari"; break;
-            case 2: result = "Maret"; break;
-            case 3: result = "April"; break;
-            case 4: result = "Mei"; break;
-            case 5: result = "Juni"; break;
-            case 6: result = "Juli"; break;
-            case 7: result = "Agustus"; break;
-            case 8: result = "September"; break;
-            case 9: result = "Oktober"; break;
-            case 10: result = "November"; break;
-            case 11: result = "Desember"; break;
-        }
-        return result;
-    }
-
     get
     chartData():ChartConfiguration['data']{
         let result: ChartConfiguration['data'] = {
             datasets:[
                 {
-                    data:this.tableColumn.map((value)=>value.total),
+                    data:this.assetSummary!.monthly.map((value)=>value.total),
                     label:'Total dalam IDR',
                     type:'bar'
                     
                 }
             ],
-            labels:this.tableColumn.map((value)=>`${this.getMonth(value.month)} - ${value.year}` )
+            labels:this.assetSummary!.monthly.map((value)=>`${value.monthText} - ${value.year}` )
 
         };
 

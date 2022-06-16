@@ -11,8 +11,8 @@
                 </ng-container>
             </tr>
             <tr>
-                <ng-container *ngFor="let column of tableColumn">
-                    <th>{{getMonth(column.month)}}</th>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <th>{{column.monthText}}</th>
                 </ng-container>
             </tr>
 
@@ -26,15 +26,15 @@
                     <button class="btn btn-sm btn-light" ngbTooltip="Tambah Entry"
                         (click)="onAddEntry(asset,addentry)"><i class="bi bi-plus-circle"></i></button>
                 </td>
-                <ng-container *ngFor="let column of tableColumn">
-                    <td class="entry" (click)="onEdit(asset,column,addentry)"> {{getAmount(asset,column) |
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td class="entry" (click)="onEdit(asset,column,addentry)"> {{column.assetValue.get(asset.id!)?.amount|
                         number}}</td>
                 </ng-container>
             </tr>
 
             <tr>
                 <td colspan="4">Total</td>
-                <ng-container *ngFor="let column of tableColumn">
+                <ng-container *ngFor="let column of assetSummary?.monthly">
                     <td>{{column.total |
                         number}}</td>
                 </ng-container>
