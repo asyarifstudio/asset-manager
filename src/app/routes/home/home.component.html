@@ -1,13 +1,18 @@
 <div class="container-fluid" *ngIf="assets else loading">
-    <table class="table table-sm">
+    <table class="table table-sm table-bordered">
         <thead>
             <tr>
-                <th>No</th>
-                <th>Nama Aset</th>
-                <th>Satuan</th>
-                <th>Pilihan</th>
+                <th rowspan="2" class="align-middle">No</th>
+                <th rowspan="2" class="align-middle">Nama Aset</th>
+                <th rowspan="2" class="align-middle">Satuan</th>
+                <th rowspan="2" class="align-middle">Pilihan</th>
+                <ng-container *ngFor="let column of yearSpans">
+                    <th [colSpan]="column.column" class="text-center">{{column.year}}</th>
+                </ng-container>
+            </tr>
+            <tr>
                 <ng-container *ngFor="let column of tableColumn">
-                    <th>{{column.year}} - {{column.month}}</th>
+                    <th>{{getMonth(column.month)}}</th>
                 </ng-container>
             </tr>
 
@@ -22,7 +27,16 @@
                         (click)="onAddEntry(asset,addentry)"><i class="bi bi-plus-circle"></i></button>
                 </td>
                 <ng-container *ngFor="let column of tableColumn">
-                   <td class="entry" (click)="onEdit(asset,column,addentry)"> {{getAmount(asset,column) | currency:asset.currency:'symbol-narrow'}}</td>
+                    <td class="entry" (click)="onEdit(asset,column,addentry)"> {{getAmount(asset,column) |
+                        number}}</td>
+                </ng-container>
+            </tr>
+
+            <tr>
+                <td colspan="4">Total</td>
+                <ng-container *ngFor="let column of tableColumn">
+                    <td>{{column.total |
+                        number}}</td>
                 </ng-container>
             </tr>
         </tbody>
@@ -57,18 +71,18 @@
             <label for="month" class="col-sm-4 col-form-label">Nama Aset</label>
             <div class="col-sm-8">
                 <select type="text" class="form-control" id="month" [(ngModel)]="currentEntry.month">
-                    <option value="0">Januari</option>
-                    <option value="1">Februari</option>
-                    <option value="2">Maret</option>
-                    <option value="3">April</option>
-                    <option value="4">Mei</option>
-                    <option value="5">Juni</option>
-                    <option value="6">Juli</option>
-                    <option value="7">Agustus</option>
-                    <option value="8">September</option>
-                    <option value="9">Oktober</option>
-                    <option value="10">November</option>
-                    <option value="11">Desember</option>
+                    <option [ngValue]="0">Januari</option>
+                    <option [ngValue]="1">Februari</option>
+                    <option [ngValue]="2">Maret</option>
+                    <option [ngValue]="3">April</option>
+                    <option [ngValue]="4">Mei</option>
+                    <option [ngValue]="5">Juni</option>
+                    <option [ngValue]="6">Juli</option>
+                    <option [ngValue]="7">Agustus</option>
+                    <option [ngValue]="8">September</option>
+                    <option [ngValue]="9">Oktober</option>
+                    <option [ngValue]="10">November</option>
+                    <option [ngValue]="11">Desember</option>
                 </select>
             </div>
         </div>
