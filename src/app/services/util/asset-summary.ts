@@ -9,6 +9,12 @@ export interface AssetMonthlySummary{
     monthText:string;
     total:number;
     assetValue:Map<string,AssetValue> //asset id and amount
+    monthlyInc:number;
+    monthlyIncPer:number;
+    yearToDateInc:number;
+    yearToDateIncPer:number;
+    overallInc:number;
+    overallIncPer:number;
 }
 
 

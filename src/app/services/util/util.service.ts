@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AssetEntry } from 'src/app/model/asset-entry.model';
 import { Asset, Currency } from 'src/app/model/asset.model';
 import { ConverterService } from '../converter/converter.service';
-import { AssetSummary, AssetValue } from './asset-summary';
+import { AssetMonthlySummary, AssetSummary, AssetValue } from './asset-summary';
 
 @Injectable({
   providedIn: 'root'
@@ -52,7 +52,13 @@ export class UtilService {
             month:entry.month,
             monthText:this.numberToMonth(entry.month),
             total:0,
-            assetValue:new Map<string,AssetValue>()
+            assetValue:new Map<string,AssetValue>(),
+            monthlyInc:0,
+            monthlyIncPer:0,
+            overallInc:0,
+            overallIncPer:0,
+            yearToDateInc:0,
+            yearToDateIncPer:0
           }
 
           result.monthly.push(monthly);
@@ -79,6 +85,34 @@ export class UtilService {
           return b.month - a.month;
         }
       })
+
+      //compute the increment
+      for(let i=0;i<result.monthly.length - 1 ;i++){
+        let current = result.monthly[i];
+        let previous = result.monthly[i+1];
+        current.monthlyInc = current.total - previous.total;
+        current.monthlyIncPer = (current.monthlyInc * 100)/previous.total
+      }
+
+      //compute yearToDate Increment
+      //compute increment from beginning;
+      let begYear:number = 0;
+      let currentYear:number = 0;
+      let beginMonthly:AssetMonthlySummary = result.monthly[result.monthly.length-1];
+      for(let monthly of result.monthly){
+        if(currentYear!=monthly.year){
+          //get new year
+          currentYear = monthly.year;
+          begYear = result.monthly.find((value)=>value.year == currentYear && value.month == 0)?.total!;
+        }
+        monthly.yearToDateInc = monthly.total - begYear;
+        monthly.yearToDateIncPer = monthly.yearToDateInc*100/begYear;
+
+        monthly.overallInc = monthly.total - beginMonthly.total;
+        monthly.overallInc = monthly.overallInc*100/beginMonthly.total;
+      }
+
+
       
 
     }

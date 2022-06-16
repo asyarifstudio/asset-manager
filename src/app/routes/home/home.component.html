@@ -34,10 +34,52 @@
             </tr>
 
             <tr>
-                <td colspan="4">Total</td>
+                <td colspan="4">Total (IDR)</td>
                 <ng-container *ngFor="let column of assetSummary?.monthly">
                     <td>{{column.total |
                         number}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Bulanan (IDR)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.monthlyInc |
+                        number}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Bulanan (%)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.monthlyIncPer |
+                        number:'1.0-2'}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Tahunan (IDR)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.yearToDateInc |
+                        number}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Tahunan (%)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.yearToDateIncPer |
+                        number:'1.0-2'}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Total (IDR)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.overallInc |
+                        number}}</td>
+                </ng-container>
+            </tr>
+            <tr>
+                <td colspan="4">Kenaikan Total (%)</td>
+                <ng-container *ngFor="let column of assetSummary?.monthly">
+                    <td>{{column.overallIncPer |
+                        number:'1.0-2'}}</td>
                 </ng-container>
             </tr>
         </tbody>
