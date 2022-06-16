@@ -123,15 +123,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     onEdit(asset: Asset, column: AssetMonthlySummary, content: any) {
         this.currentAsset = asset;
         this.modalTitle = `Edit Entry ${asset.name}`
+        const entry = column.assetValue.get(asset.id!);
+
         this.currentEntry = {
             year: column.year,
             month: column.month,
-            amount: column.assetValue.get(asset.id!)?.amount!
+            amount: entry?entry.amount:0
         }
         const entryId: string = column.assetValue.get(asset.id!)?.id!;
 
         this.modal.open(content).result.then(async () => {
-            await this.database.updateEntry(this.currentAsset, entryId, this.currentEntry);
+            if(entry){
+                await this.database.updateEntry(this.currentAsset, entryId, this.currentEntry);
+            }
+            else{
+                await this.database.addEntry(this.currentAsset,this.currentEntry);
+            }
         }, (error) => {
 
         })
