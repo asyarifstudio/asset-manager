@@ -16,13 +16,15 @@ import { HomeComponent } from './routes/home/home.component';
 import { HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
 import { MainChartComponent } from './components/main-chart/main-chart.component';
+import { AssetComponent } from './routes/asset/asset.component';
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HeaderComponent,
     HomeComponent,
-    MainChartComponent
+    MainChartComponent,
+    AssetComponent
   ],
   imports: [
     BrowserModule,

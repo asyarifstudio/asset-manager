@@ -12,39 +12,23 @@ import { DatabaseService } from 'src/app/services/database/database.service';
 })
 export class HeaderComponent implements OnInit {
 
-  asset:Asset;
 
-  $login:Observable<boolean>
-  constructor(public auth:AuthService,
-            private modal:NgbModal,
-            private database:DatabaseService) {
+  $login: Observable<boolean>
+  constructor(public auth: AuthService,
+    private modal: NgbModal,
+    private database: DatabaseService) {
     this.$login = this.auth.$isLogin;
-    this.asset = {
-      name:"",
-      currency:Currency.IDR
-    }
-   }
+
+  }
 
   ngOnInit(): void {
   }
 
-  logout(){
+  logout() {
     this.auth.logout();
   }
 
 
-  addAsset(content:any){
-    this.modal.open(content).result.then(async ()=>{
-      if(this.asset.name!=""){
-        const result = await this.database.createAsset(this.asset);
-        console.log(result);
-      }
-    },(error)=>{
-      this.asset = {
-        name:"",
-        currency:Currency.IDR
-      }
-    })
-  }
+
 
 }
