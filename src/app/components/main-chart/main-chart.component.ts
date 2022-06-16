@@ -5,6 +5,7 @@ import { Asset, Currency } from 'src/app/model/asset.model';
 import { ConverterService } from 'src/app/services/converter/converter.service';
 import { AssetSummary } from 'src/app/services/util/asset-summary';
 import { UtilService } from 'src/app/services/util/util.service';
+import * as chroma from 'chroma-js'
 
 @Component({
   selector: 'app-main-chart[assets]',
@@ -37,7 +38,7 @@ export class MainChartComponent implements OnInit {
               {
                   data:this.assetSummary!.monthly.map((value)=>value.total),
                   label:'Total dalam IDR',
-                  type:'line'
+                  type:'line',
                   
               }
           ],
@@ -46,7 +47,9 @@ export class MainChartComponent implements OnInit {
 
       //add dataset for each 
       let datasets = result.datasets;
-
+      const colorScale = chroma.scale(['red','green','blue','yellow']);
+      const scaleValue = 1/this.assets.length;
+      let i=0;
       for(let asset of this.assets){
 
         let data:number[] = this.assetSummary!.monthly.map((value)=>{
@@ -62,10 +65,28 @@ export class MainChartComponent implements OnInit {
           data:data,
           label:asset.name,
           type:'bar',
+          hidden:true,
+          backgroundColor:colorScale(i).hex()
         })
+        
+        i+=scaleValue;
       
       }
-
+      
       return result;
+  }
+
+  get
+  chartOption():ChartConfiguration['options']{
+    const option:ChartConfiguration['options'] = {
+      plugins:{
+        legend:{
+          display:true,
+          position:'bottom'
+        }
+      }
+    }
+
+    return option
   }
 }
