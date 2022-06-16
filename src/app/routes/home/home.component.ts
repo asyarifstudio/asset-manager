@@ -96,10 +96,6 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
         }
 
-        //console.log(this.yearSpans);
-
-
-
         this.assets = assets;
     }
     ngOnDestroy(): void {
@@ -152,24 +148,5 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     }
 
-    get
-    chartData():ChartConfiguration['data']{
-        let result: ChartConfiguration['data'] = {
-            datasets:[
-                {
-                    data:this.assetSummary!.monthly.map((value)=>value.total),
-                    label:'Total dalam IDR',
-                    type:'bar'
-                    
-                }
-            ],
-            labels:this.assetSummary!.monthly.map((value)=>`${value.monthText} - ${value.year}` )
-
-        };
-
-        
-
-
-        return result;
-    }
+ 
 }

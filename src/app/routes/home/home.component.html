@@ -42,9 +42,7 @@
         </tbody>
     </table>
 
-    <canvas baseChart height="100"
-                [data]="chartData"
-               ></canvas>
+    <app-main-chart *ngIf="assets" [assets]="assets"></app-main-chart>
 
 </div>
 

@@ -15,12 +15,14 @@ import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './routes/home/home.component';
 import { HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
+import { MainChartComponent } from './components/main-chart/main-chart.component';
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HeaderComponent,
-    HomeComponent
+    HomeComponent,
+    MainChartComponent
   ],
   imports: [
     BrowserModule,
