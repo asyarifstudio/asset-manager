@@ -13,7 +13,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { HeaderComponent } from './components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './routes/home/home.component';
-
+import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,6 +26,7 @@ import { HomeComponent } from './routes/home/home.component';
     AppRoutingModule,
     NgbModule,
     FormsModule,
+    HttpClientModule,
     AngularFireModule.initializeApp(environment.firebase)
   ],
   providers: [],

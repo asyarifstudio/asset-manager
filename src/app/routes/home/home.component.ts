@@ -4,6 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { AssetEntry } from 'src/app/model/asset-entry.model';
 import { Asset, Currency } from 'src/app/model/asset.model';
+import { ConverterService } from 'src/app/services/converter/converter.service';
 import { DatabaseService } from 'src/app/services/database/database.service';
 
 
@@ -40,8 +41,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     tableColumn: TableColumn[] = [];
     modalTitle: string = ""
     yearSpans: YearSpan[] = [];
+    SGD_TO_IDR:number=0;
     constructor(private database: DatabaseService,
-        private modal: NgbModal) {
+        private modal: NgbModal,
+        private converter:ConverterService) {
+        
 
         this.subs.push(
             this.database.$valueChanges.subscribe(() => {
@@ -61,85 +65,90 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
     }
 
-    initTableEntry() {
+    async initTableEntry() {
         this.assets = undefined;
         this.tableColumn = [];
         this.yearSpans = [];
-        firstValueFrom(this.database.getAssets()).then(async (assets) => {
-            for (let asset of assets) {
-                asset.entries = await firstValueFrom(this.database.getEntries(asset));
-                //for each of the entry in the asset, loop through it to add to table entry
-                for (let entry of asset.entries) {//#loop 1{
-                    let found: boolean = false;
-                    //search in the table entry if date already available
-                    for (let column of this.tableColumn) {//#loop 2{
-                        //table entry available, just add in the entry row
-                        if (entry.month == column.month && entry.year == column.year) {
-                            column.rows.set(asset.id!, { id: entry.id!, amount: entry.amount })
-                            if(asset.currency == Currency.SGD){
-                                column.total += (entry.amount * 10000);
-                            }
-                            else{
-                                column.total += (entry.amount);
-                            }
-                            
-                            found = true;
-                            break;//stop #loop 2
-                        }
-                    }
 
-                    if (!found) {
-                        let map = new Map<string, RowData>();
-                        map.set(asset.id!, { id: entry.id!, amount: entry.amount });
-                        let total:number = entry.amount;
-                        if(asset.currency == Currency.SGD){
-                            total = total*10000;
-                        }
-                        //not found in the table entry,create new table Entry
-                        this.tableColumn.push({
-                            year: entry.year,
-                            month: entry.month,
-                            rows: map,
-                            total
-                        })
-                    }
-                }
-            }
-            //after this, sort the table entry based on the year and month;
-            this.tableColumn = this.tableColumn.sort((a, b) => {
-                if (a.year != b.year) {
-                    return b.year - a.year;
-                }
-                else {
-                    return b.month - a.month;
-                }
-            })
+        if(this.SGD_TO_IDR==0){
+            this.SGD_TO_IDR = await this.converter.getRate(Currency.SGD,Currency.IDR);
+        }
 
-            //create yearspan for the table
-            for (let column of this.tableColumn) {
+        const assets:Asset[] = await firstValueFrom(this.database.getAssets());
+
+        for (let asset of assets) {
+            asset.entries = await firstValueFrom(this.database.getEntries(asset));
+            //for each of the entry in the asset, loop through it to add to table entry
+            for (let entry of asset.entries) {//#loop 1{
                 let found: boolean = false;
-                for (let yearSpan of this.yearSpans) {
-                    if (yearSpan.year == column.year) {
-                        yearSpan.column += 1;
+                //search in the table entry if date already available
+                for (let column of this.tableColumn) {//#loop 2{
+                    //table entry available, just add in the entry row
+                    if (entry.month == column.month && entry.year == column.year) {
+                        column.rows.set(asset.id!, { id: entry.id!, amount: entry.amount })
+                        if(asset.currency == Currency.SGD){
+                            column.total += (entry.amount * this.SGD_TO_IDR);
+                        }
+                        else{
+                            column.total += (entry.amount);
+                        }
+                        
                         found = true;
-                        break;
+                        break;//stop #loop 2
                     }
                 }
 
                 if (!found) {
-                    this.yearSpans.push({
-                        year: column.year,
-                        column: 1
+                    let map = new Map<string, RowData>();
+                    map.set(asset.id!, { id: entry.id!, amount: entry.amount });
+                    let total:number = entry.amount;
+                    if(asset.currency == Currency.SGD){
+                        total = total*this.SGD_TO_IDR;
+                    }
+                    //not found in the table entry,create new table Entry
+                    this.tableColumn.push({
+                        year: entry.year,
+                        month: entry.month,
+                        rows: map,
+                        total
                     })
                 }
             }
-
-            //console.log(this.yearSpans);
-
-
-
-            this.assets = assets;
+        }
+        //after this, sort the table entry based on the year and month;
+        this.tableColumn = this.tableColumn.sort((a, b) => {
+            if (a.year != b.year) {
+                return b.year - a.year;
+            }
+            else {
+                return b.month - a.month;
+            }
         })
+
+        //create yearspan for the table
+        for (let column of this.tableColumn) {
+            let found: boolean = false;
+            for (let yearSpan of this.yearSpans) {
+                if (yearSpan.year == column.year) {
+                    yearSpan.column += 1;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                this.yearSpans.push({
+                    year: column.year,
+                    column: 1
+                })
+            }
+        }
+
+        //console.log(this.yearSpans);
+
+
+
+        this.assets = assets;
     }
     ngOnDestroy(): void {
         for (let sub of this.subs) {
