@@ -14,6 +14,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './routes/home/home.component';
 import { HttpClientModule } from '@angular/common/http';
+import { NgChartsModule } from 'ng2-charts';
 @NgModule({
   declarations: [
     AppComponent,
@@ -27,7 +28,8 @@ import { HttpClientModule } from '@angular/common/http';
     NgbModule,
     FormsModule,
     HttpClientModule,
-    AngularFireModule.initializeApp(environment.firebase)
+    AngularFireModule.initializeApp(environment.firebase),
+    NgChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { async } from '@firebase/util';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { ChartConfiguration } from 'chart.js';
+import { firstValueFrom, last, Observable, Subscription } from 'rxjs';
 import { AssetEntry } from 'src/app/model/asset-entry.model';
 import { Asset, Currency } from 'src/app/model/asset.model';
 import { ConverterService } from 'src/app/services/converter/converter.service';
@@ -220,4 +221,24 @@ export class HomeComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    get
+    chartData():ChartConfiguration['data']{
+        let result: ChartConfiguration['data'] = {
+            datasets:[
+                {
+                    data:this.tableColumn.map((value)=>value.total),
+                    label:'Total dalam IDR',
+                    type:'bar'
+                    
+                }
+            ],
+            labels:this.tableColumn.map((value)=>`${this.getMonth(value.month)} - ${value.year}` )
+
+        };
+
+        
+
+
+        return result;
+    }
 }
