@@ -34,17 +34,18 @@
                         number}}</td>
                 </ng-container>
             </tr>
-            <tr>
-                <td colspan="4">Total (IDR)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.increment.get('TOTAL')!.total |
-                        number}}</td>
-                </ng-container>
-            </tr>
+            
             <ng-container *ngFor="let key of getSummaryKeys()">
-
                 <tr>
-                    <td colspan="2" rowspan="6">Kenaikan {{key}}</td>
+                    <td colspan="1" rowspan="7">{{key}}</td>
+                    <td colspan="3">Total (IDR)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.total |
+                            number}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="1" rowspan="6">Kenaikan {{key}}</td>
                     <td colspan="2">Bulanan (IDR)</td>
                     <ng-container *ngFor="let column of assetSummary?.monthly">
                         <td>{{column.increment.get(key)!.monthlyInc |
