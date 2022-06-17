@@ -1,7 +1,26 @@
+import { Currency } from "src/app/model/asset.model";
 
 export interface AssetValue{
+    /**
+     * Id of the entry in database
+     */
     id:string,
-    amount:number
+    /**
+     * name of the asset that own this entry
+     */
+    name:string,
+    /**
+     * currency of the asset that own this entry
+     */
+    currency:Currency
+    /**
+     * the amount of the entry in the original currency
+     */
+    amount:number,
+    /**
+     * amount in IDR
+     */
+    amountIDR:number
 }
 export interface AssetIncrement {
     total:number;

@@ -85,15 +85,24 @@ export class UtilService {
           result.monthly.push(monthly);
         }
 
-
-        monthly.assetValue.set(asset.id!, { id: entry.id!, amount: entry.amount });
-
         let multiplier: number;
 
         switch (asset.currency) {
           case Currency.IDR: multiplier = 1; break;
           case Currency.SGD: multiplier = SGD_TO_IDR; break;
         }
+
+        let assetvalue: AssetValue =
+        {
+          id: entry.id!,
+          amount: entry.amount,
+          name: asset.name,
+          currency: asset.currency,
+          amountIDR:multiplier*entry.amount
+        }
+
+
+        monthly.assetValue.set(asset.id!, assetvalue);
 
         monthly.increment.get('TOTAL')!.total += entry.amount * multiplier;
         monthly.increment.get(asset.currency)!.total += entry.amount * multiplier;
@@ -128,7 +137,7 @@ export class UtilService {
       for (let [key, value] of current.increment) {
 
         value.monthlyInc = value.total - previous.increment.get(key)!.total;
-        value.monthlyIncPer = (value.monthlyInc * 100)/previous.increment.get(key)!.total;
+        value.monthlyIncPer = (value.monthlyInc * 100) / previous.increment.get(key)!.total;
       }
     }
 
@@ -138,7 +147,7 @@ export class UtilService {
     let currentYear: number = 0;
     let firstMonlty: AssetMonthlySummary = result.monthly[result.monthly.length - 1];
     for (let monthly of result.monthly) {
-      if(monthly.year == 2018 && monthly.month == 11){
+      if (monthly.year == 2018 && monthly.month == 11) {
       }
 
       if (currentYear != monthly.year) {
@@ -146,22 +155,22 @@ export class UtilService {
         currentYear = monthly.year;
         begYear = result.monthly.find((value) => value.year == currentYear && value.month == 0)!;
         //if undefined, meaning the earliest month is not january
-        if(!begYear){
+        if (!begYear) {
           //search for earliest month
-          const thatYearMonthly = result.monthly.filter((value)=>value.year == currentYear);
+          const thatYearMonthly = result.monthly.filter((value) => value.year == currentYear);
           //within this year, find the smallest month normally it's the latest
           begYear = thatYearMonthly[thatYearMonthly.length - 1];
 
         }
       }
 
-     
-      for(let [key,value] of monthly.increment){
+
+      for (let [key, value] of monthly.increment) {
 
         value.yearToDateInc = value.total - begYear.increment.get(key)!.total;
-        value.yearToDateIncPer = (value.yearToDateInc * 100)/begYear.increment.get(key)!.total;
+        value.yearToDateIncPer = (value.yearToDateInc * 100) / begYear.increment.get(key)!.total;
         value.overallInc = value.total - firstMonlty.increment.get(key)!.total;
-        value.overallIncPer = (value.overallInc*100)/firstMonlty.increment.get(key)!.total;
+        value.overallIncPer = (value.overallInc * 100) / firstMonlty.increment.get(key)!.total;
 
       }
 

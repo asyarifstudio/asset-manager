@@ -1,4 +1,9 @@
 <ng-container *ngIf="assetSummary">
-    <canvas baseChart height="100" [data]="chartData"
-            [options]="chartOption"></canvas>
+    <canvas baseChart height="150" [data]="progressChartData" [options]="progressChartOption"></canvas>
+    <div class="d-flex justify-content-center">
+        <canvas baseChart [ngStyle]="{'max-width':'500px','max-height':'500px'}" [type]="'pie'" [data]="percentageChartData"
+        [options]="percentageChartOption"
+        [plugins]="percentageChartPlugin"></canvas>
+    </div>
+
 </ng-container>
