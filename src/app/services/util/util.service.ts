@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AssetEntry } from 'src/app/model/asset-entry.model';
 import { Asset, Currency } from 'src/app/model/asset.model';
 import { ConverterService } from '../converter/converter.service';
-import { AssetMonthlySummary, AssetSummary, AssetValue } from './asset-summary';
+import { AssetIncrement, AssetMonthlySummary, AssetSummary, AssetValue } from './asset-summary';
 
 @Injectable({
   providedIn: 'root'
@@ -51,27 +51,52 @@ export class UtilService {
             year: entry.year,
             month: entry.month,
             monthText: this.numberToMonth(entry.month),
-            total: 0,
+
             assetValue: new Map<string, AssetValue>(),
+            increment: new Map()
+          }
+
+          //set initial currency increment
+          for (let currency of [Currency.IDR, Currency.SGD]) {
+            monthly.increment.set(currency, {
+              monthlyInc: 0,
+              total: 0,
+              monthlyIncPer: 0,
+              overallInc: 0,
+              overallIncPer: 0,
+              yearToDateInc: 0,
+              yearToDateIncPer: 0
+            })
+          }
+          //set total increment
+          monthly.increment.set('TOTAL', {
             monthlyInc: 0,
+            total: 0,
             monthlyIncPer: 0,
             overallInc: 0,
             overallIncPer: 0,
             yearToDateInc: 0,
             yearToDateIncPer: 0
-          }
+          })
 
+
+
+          //push to table
           result.monthly.push(monthly);
         }
 
-        monthly.assetValue.set(asset.id!, { id: entry.id!, amount: entry.amount });
-        if (asset.currency == Currency.IDR) {
 
-          monthly.total += entry.amount;
+        monthly.assetValue.set(asset.id!, { id: entry.id!, amount: entry.amount });
+
+        let multiplier: number;
+
+        switch (asset.currency) {
+          case Currency.IDR: multiplier = 1; break;
+          case Currency.SGD: multiplier = SGD_TO_IDR; break;
         }
-        else {
-          monthly.total += (entry.amount * SGD_TO_IDR);
-        }
+
+        monthly.increment.get('TOTAL')!.total += entry.amount * multiplier;
+        monthly.increment.get(asset.currency)!.total += entry.amount * multiplier;
 
       }
 
@@ -87,30 +112,59 @@ export class UtilService {
       }
     })
 
+
     //compute the increment
+
+
+
     for (let i = 0; i < result.monthly.length - 1; i++) {
+
+
+
+
       let current = result.monthly[i];
       let previous = result.monthly[i + 1];
-      current.monthlyInc = current.total - previous.total;
-      current.monthlyIncPer = (current.monthlyInc * 100) / previous.total
+
+      for (let [key, value] of current.increment) {
+
+        value.monthlyInc = value.total - previous.increment.get(key)!.total;
+        value.monthlyIncPer = (value.monthlyInc * 100)/previous.increment.get(key)!.total;
+      }
     }
 
     //compute yearToDate Increment
     //compute increment from beginning;
-    let begYear: number = 0;
+    let begYear!: AssetMonthlySummary;
     let currentYear: number = 0;
-    let beginMonthly: AssetMonthlySummary = result.monthly[result.monthly.length - 1];
+    let firstMonlty: AssetMonthlySummary = result.monthly[result.monthly.length - 1];
     for (let monthly of result.monthly) {
+      if(monthly.year == 2018 && monthly.month == 11){
+      }
+
       if (currentYear != monthly.year) {
         //get new year
         currentYear = monthly.year;
-        begYear = result.monthly.find((value) => value.year == currentYear && value.month == 0)?.total!;
-      }
-      monthly.yearToDateInc = monthly.total - begYear;
-      monthly.yearToDateIncPer = monthly.yearToDateInc * 100 / begYear;
+        begYear = result.monthly.find((value) => value.year == currentYear && value.month == 0)!;
+        //if undefined, meaning the earliest month is not january
+        if(!begYear){
+          //search for earliest month
+          const thatYearMonthly = result.monthly.filter((value)=>value.year == currentYear);
+          //within this year, find the smallest month normally it's the latest
+          begYear = thatYearMonthly[thatYearMonthly.length - 1];
 
-      monthly.overallInc = monthly.total - beginMonthly.total;
-      monthly.overallIncPer = monthly.overallInc * 100 / beginMonthly.total;
+        }
+      }
+
+     
+      for(let [key,value] of monthly.increment){
+
+        value.yearToDateInc = value.total - begYear.increment.get(key)!.total;
+        value.yearToDateIncPer = (value.yearToDateInc * 100)/begYear.increment.get(key)!.total;
+        value.overallInc = value.total - firstMonlty.increment.get(key)!.total;
+        value.overallIncPer = (value.overallInc*100)/firstMonlty.increment.get(key)!.total;
+
+      }
+
     }
 
     return result;

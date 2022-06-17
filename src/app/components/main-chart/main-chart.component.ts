@@ -36,7 +36,7 @@ export class MainChartComponent implements OnInit {
       let result: ChartConfiguration['data'] = {
           datasets:[
               {
-                  data:this.assetSummary!.monthly.map((value)=>value.total),
+                  data:this.assetSummary!.monthly.map((value)=>value.increment.get('TOTAL')!.total),
                   label:'Total dalam IDR',
                   type:'line',
                   

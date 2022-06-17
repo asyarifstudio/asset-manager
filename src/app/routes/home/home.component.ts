@@ -120,6 +120,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     }
 
+    getSummaryKeys(){
+        return [...this.assetSummary?.monthly[0].increment.keys()!]
+    }
+
     onEdit(asset: Asset, column: AssetMonthlySummary, content: any) {
         this.currentAsset = asset;
         this.modalTitle = `Edit Entry ${asset.name}`

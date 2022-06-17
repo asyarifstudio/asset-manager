@@ -25,63 +25,70 @@
                 <td>
                     <button class="btn btn-sm btn-light" ngbTooltip="Tambah Entry"
                         (click)="onAddEntry(asset,addentry)"><i class="bi bi-plus-circle"></i></button>
-                    <a  ngbTooltip="Edit Aset" [routerLink]="['aset',asset.id!]" class="btn btn-sm btn-light"><i class="bi bi-pen"></i></a>
+                    <a ngbTooltip="Edit Aset" [routerLink]="['aset',asset.id!]" class="btn btn-sm btn-light"><i
+                            class="bi bi-pen"></i></a>
                 </td>
                 <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td class="entry" (click)="onEdit(asset,column,addentry)"> {{column.assetValue.get(asset.id!)?.amount|
+                    <td class="entry" (click)="onEdit(asset,column,addentry)">
+                        {{column.assetValue.get(asset.id!)?.amount|
                         number}}</td>
                 </ng-container>
             </tr>
-
             <tr>
                 <td colspan="4">Total (IDR)</td>
                 <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.total |
+                    <td>{{column.increment.get('TOTAL')!.total |
                         number}}</td>
                 </ng-container>
             </tr>
-            <tr>
-                <td colspan="4">Kenaikan Bulanan (IDR)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.monthlyInc |
-                        number}}</td>
-                </ng-container>
-            </tr>
-            <tr>
-                <td colspan="4">Kenaikan Bulanan (%)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.monthlyIncPer |
-                        number:'1.0-2'}}</td>
-                </ng-container>
-            </tr>
-            <tr>
-                <td colspan="4">Kenaikan Tahunan (IDR)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.yearToDateInc |
-                        number}}</td>
-                </ng-container>
-            </tr>
-            <tr>
-                <td colspan="4">Kenaikan Tahunan (%)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.yearToDateIncPer |
-                        number:'1.0-2'}}</td>
-                </ng-container>
-            </tr>
-            <tr>
-                <td colspan="4">Kenaikan Total (IDR)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.overallInc |
-                        number}}</td>
-                </ng-container>
-            </tr>
-            <tr>
-                <td colspan="4">Kenaikan Total (%)</td>
-                <ng-container *ngFor="let column of assetSummary?.monthly">
-                    <td>{{column.overallIncPer |
-                        number:'1.0-2'}}</td>
-                </ng-container>
-            </tr>
+            <ng-container *ngFor="let key of getSummaryKeys()">
+
+                <tr>
+                    <td colspan="2" rowspan="6">Kenaikan {{key}}</td>
+                    <td colspan="2">Bulanan (IDR)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.monthlyInc |
+                            number}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="2">Bulanan (%)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.monthlyIncPer |
+                            number:'1.0-2'}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="2">Tahunan (IDR)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.yearToDateInc |
+                            number}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="2">Tahunan (%)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.yearToDateIncPer |
+                            number:'1.0-2'}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="2">Total (IDR)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.overallInc |
+                            number}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <td colspan="2">Total (%)</td>
+                    <ng-container *ngFor="let column of assetSummary?.monthly">
+                        <td>{{column.increment.get(key)!.overallIncPer |
+                            number:'1.0-2'}}</td>
+                    </ng-container>
+                </tr>
+
+            </ng-container>
+
         </tbody>
     </table>
 
