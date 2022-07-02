@@ -113,7 +113,7 @@ export class MainChartComponent implements OnInit {
         return a.amountIDR - b.amountIDR
       });
     let result: ChartConfiguration['data'] = {
-      labels: lastSummary.map((value) => `${value.name} - ${((value.amountIDR*100)/totalAsset).toFixed(2)}%`),
+      labels: lastSummary.map((value) => `${value.name} - ${((value.amountIDR * 100) / totalAsset).toFixed(2)}%`),
       datasets: [
         {
           data: lastSummary.map((value) => {
@@ -137,13 +137,13 @@ export class MainChartComponent implements OnInit {
           display: false,
         },
         datalabels: {
-          display:true,
-          formatter:(value,context)=>{
-            let label:string = context.chart.data.labels![context.dataIndex] as string;
+          display: true,
+          formatter: (value, context) => {
+            let label: string = context.chart.data.labels![context.dataIndex] as string;
             return label
           },
-          font:{
-            size:10
+          font: {
+            size: 10
           }
         },
         title: {
@@ -152,7 +152,7 @@ export class MainChartComponent implements OnInit {
         },
 
       },
-      
+
 
     }
 
@@ -170,7 +170,55 @@ export class MainChartComponent implements OnInit {
       .sort((a, b) => {
         return a.amountIDR - b.amountIDR
       });
-    
+
     return lastSummary.map((value) => `${value.name}`)
+  }
+
+
+  get
+    incrementChartData(): ChartConfiguration['data'] {
+    let result: ChartConfiguration['data'] = {
+      datasets: [
+        {
+          data: this.assetSummary!.monthly.map((value) => value.increment.get('TOTAL')!.monthlyInc),
+          label: 'Total',
+          type: 'line',
+
+        },
+        {
+          data: this.assetSummary!.monthly.map((value) => value.increment.get('SGD')!.monthlyInc),
+          label: 'Total SGD',
+          type: 'bar',
+        },
+        {
+          data: this.assetSummary!.monthly.map((value) => value.increment.get('IDR')!.monthlyInc),
+          label: 'Total IDR',
+          type: 'bar',
+        }
+      ],
+      labels: this.assetSummary!.monthly.map((value) => `${value.monthText} - ${value.year}`)
+
+    };
+
+
+    return result;
+  }
+
+  get
+    incrementChartOption(): ChartConfiguration['options'] {
+    const option: ChartConfiguration['options'] = {
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
+        title: {
+          display: true,
+          text: "Progress Kenaikan"
+        }
+      }
+    }
+
+    return option
   }
 }

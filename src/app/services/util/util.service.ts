@@ -98,7 +98,7 @@ export class UtilService {
           amount: entry.amount,
           name: asset.name,
           currency: asset.currency,
-          amountIDR:multiplier*entry.amount
+          amountIDR:multiplier*entry.amount,
         }
 
 
