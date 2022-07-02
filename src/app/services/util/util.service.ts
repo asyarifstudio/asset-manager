@@ -41,7 +41,7 @@ export class UtilService {
     for (let asset of assets) {
 
       //if no entry, break;
-      if (asset.entries == undefined) break;
+      if (asset.entries == undefined) continue;
 
       for (let entry of asset.entries!) {
         let monthly = result.monthly.find((value) => value.month == entry.month && value.year == entry.year);
