@@ -138,6 +138,7 @@ export class UtilService {
 
         value.monthlyInc = value.total - previous.increment.get(key)!.total;
         value.monthlyIncPer = (value.monthlyInc * 100) / previous.increment.get(key)!.total;
+        value.monthlyIncPer = value.monthlyIncPer===Infinity?100:value.monthlyIncPer
       }
     }
 
@@ -147,8 +148,8 @@ export class UtilService {
     let currentYear: number = 0;
     let firstMonlty: AssetMonthlySummary = result.monthly[result.monthly.length - 1];
     for (let monthly of result.monthly) {
-      if (monthly.year == 2018 && monthly.month == 11) {
-      }
+      //skip the first month
+      if (monthly.year == firstMonlty.year && monthly.month == firstMonlty.month) continue;
 
       if (currentYear != monthly.year) {
         //get new year
@@ -169,9 +170,10 @@ export class UtilService {
 
         value.yearToDateInc = value.total - begYear.increment.get(key)!.total;
         value.yearToDateIncPer = (value.yearToDateInc * 100) / begYear.increment.get(key)!.total;
+        value.yearToDateIncPer = value.yearToDateIncPer === Infinity?100:value.yearToDateIncPer;
         value.overallInc = value.total - firstMonlty.increment.get(key)!.total;
         value.overallIncPer = (value.overallInc * 100) / firstMonlty.increment.get(key)!.total;
-
+        value.overallIncPer = value.overallIncPer === Infinity?100:value.overallIncPer;
       }
 
     }

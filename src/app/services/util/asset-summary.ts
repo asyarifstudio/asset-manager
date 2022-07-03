@@ -36,6 +36,9 @@ export interface AssetMonthlySummary{
     month:number;
     monthText:string;
     assetValue:Map<string,AssetValue> //asset id and amount
+    /**
+     * increment of the TOTAL and the Currency
+     */
     increment:Map<string,AssetIncrement>
 }
 
