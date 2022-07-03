@@ -183,4 +183,20 @@ describe('UtilService', () => {
   })
 
 
+  it("should convert the month",()=>{
+    expect(service.numberToMonth(0)).toBe("Januari");
+    expect(service.numberToMonth(1)).toBe("Februari");
+    expect(service.numberToMonth(2)).toBe("Maret");
+    expect(service.numberToMonth(3)).toBe("April");
+    expect(service.numberToMonth(4)).toBe("Mei");
+    expect(service.numberToMonth(5)).toBe("Juni");
+    expect(service.numberToMonth(6)).toBe("Juli");
+    expect(service.numberToMonth(7)).toBe("Agustus");
+    expect(service.numberToMonth(8)).toBe("September");
+    expect(service.numberToMonth(9)).toBe("Oktober");
+    expect(service.numberToMonth(10)).toBe("November");
+    expect(service.numberToMonth(11)).toBe("Desember");
+  })
+
+
 });
