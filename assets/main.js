@@ -1338,7 +1338,7 @@ function displayTable(data) {
 
     //see the data and sort by keys
     for(let account of tableSource){
-        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
+        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id").reverse();
         for(let year of years){
             //check if the year already exist in col
             var year_col = columns.find((col)=> col.title == year);
@@ -1349,7 +1349,7 @@ function displayTable(data) {
                 }
                 columns.push(year_col);
             }
-            const months = Object.keys(account[year]);
+            const months = Object.keys(account[year]).reverse();
             for(let month of months){
 
                 var month_col = year_col.columns.find((col)=>col.field == `${year}${month}`)
