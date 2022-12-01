@@ -1356,7 +1356,8 @@ function displayTable(data) {
                 if(!month_col){
                     month_col = {
                         field:`${year}${month}`,
-                        title:month
+                        title:month,
+                        formatter:"money"
                     }
                     year_col.columns.push(month_col)
                 }
