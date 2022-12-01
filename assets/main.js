@@ -1320,8 +1320,9 @@ async function fetchData() {
             var month = key.slice(0, key.length - 4);
             if(month.length == 1) month = '0'+month
             
+
             entries.push({
-                amount:parseInt(account[key]==''?0:account[key]),
+                amount:account[key]!=''?parseFloat(account[key]):undefined,
                 year:parseInt(year),
                 month:parseInt(month),
                 index:parseInt(year+month),
@@ -1329,7 +1330,7 @@ async function fetchData() {
             })
             delete account[key]
         }
-        account['entries'] = entries.sort((a,b)=>(a.index - b.index))
+        account['entries'] = entries.sort((a,b)=>(b.index - a.index))
     }
     return data.copyOfMonthlyBalance;
 }
@@ -1349,48 +1350,42 @@ function displayTable(data) {
 
     //see the data and sort by keys
     for(let account of tableSource){
-        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id").reverse();
-        for(let year of years){
+        
+        for(let entry of account.entries){
             //check if the year already exist in col
-            var year_col = columns.find((col)=> col.title == year);
+            var year_col = columns.find((col)=> parseInt(col.title) == entry.year);
             if(!year_col){
                 year_col = {
-                    title:year,
+                    title:`${entry.year}`,
                     columns:[]
                 }
                 columns.push(year_col);
             }
-            const months = Object.keys(account[year]).reverse();
-            for(let month of months){
 
-                var month_col = year_col.columns.find((col)=>col.field == `${year}${month}`)
-                if(!month_col){
-                    month_col = {
-                        field:`${year}${month}`,
-                        title:month,
-                        formatter:"money"
-                    }
-                    year_col.columns.push(month_col)
+            var month_col = year_col.columns.find((col)=>parseInt(col.field) == entry.index)
+            if(!month_col){
+                month_col = {
+                    field:`${entry.index}`,
+                    title:`${entry.month}`,
+                    formatter:"money"
                 }
+                year_col.columns.push(month_col)
             }
         }
     }
 
     //modify the data so it has proper field
     for(let account of tableSource){
-        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
-        for(let year of years){
-            const months = Object.keys(account[year]);
-            for(let month of months){
-                account[`${year}${month}`] = account[year][month]
-            }
-            
-            delete account[year]
-            
+        
+        for(let entry of account.entries){
+            account[entry.index] = entry.amount;
         }
 
+        delete account.entries
     }
 
+    console.log(tableSource)
+    console.log(columns)
     new Tabulator("#maintable", {
         data: tableSource, //assign data to table
         columns:columns
@@ -1400,8 +1395,8 @@ function displayTable(data) {
 async function main() {
     console.log("Starting the main script")
     var data = await fetchData();
-    console.log(data)
-    //displayTable(data)
+    
+    displayTable(data)
 }
 
 $(document).ready(function () {
