@@ -1306,18 +1306,17 @@ const DUMMY = {
     ]
 }
 
-async function fetchData(){
+async function fetchData() {
     // const res = await fetch(URL, {method:"GET"})
     // const data = await res.json();
     data = DUMMY
-    for(let account of data.copyOfMonthlyBalance){
+    for (let account of data.copyOfMonthlyBalance) {
         //remove name, active, type, currency, and id
-        var keys = Object.keys(account).filter((val)=>val!='name' && val!="active" && val!="type" && val!='currency' && val!="id")
-        for(let key of keys){
+        var keys = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
+        for (let key of keys) {
             var year = key.slice(key.length - 4);
-            var month = key.slice(0,key.length-4);
-            console.log(`${month} - ${year}`)
-            if(!account[`${year}`]) account[`${year}`]  = {}
+            var month = key.slice(0, key.length - 4);
+            if (!account[`${year}`]) account[`${year}`] = {}
             account[`${year}`][month] = account[key]
             delete account[key]
         }
@@ -1325,12 +1324,75 @@ async function fetchData(){
     return data.copyOfMonthlyBalance;
 }
 
+function displayTable(data) {
 
+    var tableSource = JSON.parse(JSON.stringify(data))
 
-async function main(){
-    console.log("Starting the main script")
-    var data = await fetchData();
+    //initialize table
+    var columns = [
+        {field:"name",title:"Name"},
+        {field:"active",title:"Active"},
+        {field:"type",title:"Type"},
+        {field:"currency",title:"Currency"},
+    ]
+
+    //see the data and sort by keys
+    for(let account of tableSource){
+        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
+        for(let year of years){
+            //check if the year already exist in col
+            var year_col = columns.find((col)=> col.title == year);
+            if(!year_col){
+                year_col = {
+                    title:year,
+                    columns:[]
+                }
+                columns.push(year_col);
+            }
+            const months = Object.keys(account[year]);
+            for(let month of months){
+
+                var month_col = year_col.columns.find((col)=>col.field == `${year}${month}`)
+                if(!month_col){
+                    month_col = {
+                        field:`${year}${month}`,
+                        title:month
+                    }
+                    year_col.columns.push(month_col)
+                }
+            }
+        }
+    }
+
+    //modify the data so it has proper field
+    for(let account of tableSource){
+        var years = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
+        for(let year of years){
+            const months = Object.keys(account[year]);
+            for(let month of months){
+                account[`${year}${month}`] = account[year][month]
+            }
+            
+            delete account[year]
+            
+        }
+
+    }
+
+    console.log(tableSource)
+    console.log(columns)
+    new Tabulator("#maintable", {
+        data: tableSource, //assign data to table
+        columns:columns
+    });
 }
 
+async function main() {
+    console.log("Starting the main script")
+    var data = await fetchData();
+    displayTable(data)
+}
 
-main()
+$(document).ready(function () {
+    main()
+})
