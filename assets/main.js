@@ -1311,18 +1311,29 @@ async function fetchData() {
     // const data = await res.json();
     data = DUMMY
     for (let account of data.copyOfMonthlyBalance) {
+
+        var entries = []
         //remove name, active, type, currency, and id
         var keys = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
         for (let key of keys) {
             var year = key.slice(key.length - 4);
             var month = key.slice(0, key.length - 4);
-            if (!account[`${year}`]) account[`${year}`] = {}
-            account[`${year}`][month] = account[key]
+            if(month.length == 1) month = '0'+month
+            
+            entries.push({
+                amount:parseInt(account[key]==''?0:account[key]),
+                year:parseInt(year),
+                month:parseInt(month),
+                index:parseInt(year+month),
+                title:`${month} - ${year}`
+            })
             delete account[key]
         }
+        account['entries'] = entries.sort((a,b)=>(a.index - b.index))
     }
     return data.copyOfMonthlyBalance;
 }
+
 
 function displayTable(data) {
 
@@ -1380,8 +1391,6 @@ function displayTable(data) {
 
     }
 
-    console.log(tableSource)
-    console.log(columns)
     new Tabulator("#maintable", {
         data: tableSource, //assign data to table
         columns:columns
@@ -1391,7 +1400,8 @@ function displayTable(data) {
 async function main() {
     console.log("Starting the main script")
     var data = await fetchData();
-    displayTable(data)
+    console.log(data)
+    //displayTable(data)
 }
 
 $(document).ready(function () {
