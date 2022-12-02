@@ -408,32 +408,18 @@ async function main() {
    
 }
 
-// $(document).ready(function () {
-//     $('#form').submit(async function (e) {
-//         e.preventDefault()
-//         var crendential = $("#form :input").serializeArray();
-//         var data = await fetchData(crendential[0].value,crendential[1].value);
-//         if(data){
-//             $('#password-form').hide()
-//             var summary = await buildSummary(data)
-//             displayAccountTable(data)
-//             displayTrendTable(summary);
-//             displayTrendChart(summary)
-//             displayProportionChart(summary)
-//         }
-//     })
-// })
-
-$(document).ready(async function () {
-    var data = await fetchData("syarif","sayakamu");
-    if(data){
-        $('#password-form').hide()
-        var summary = await buildSummary(data)
-        console.log(data);
-        console.log(summary)
-        displayAccountTable(data)
-        displayTrendTable(summary);
-        displayTrendChart(summary)
-        displayProportionChart(summary)
-    }
+$(document).ready(function () {
+    $('#form').submit(async function (e) {
+        e.preventDefault()
+        var crendential = $("#form :input").serializeArray();
+        var data = await fetchData(crendential[0].value,crendential[1].value);
+        if(data){
+            $('#password-form').hide()
+            var summary = await buildSummary(data)
+            displayAccountTable(data)
+            displayTrendTable(summary);
+            displayTrendChart(summary)
+            displayProportionChart(summary)
+        }
+    })
 })
