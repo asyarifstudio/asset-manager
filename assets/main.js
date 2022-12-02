@@ -1308,33 +1308,40 @@ const DUMMY = {
 
 const MAIN_CURRENCY = 'IDR'
 
-async function fetchData() {
-    // const res = await fetch(URL, {method:"GET"})
-    // const data = await res.json();
-    data = DUMMY
-    for (let account of data.copyOfMonthlyBalance) {
+async function fetchData(username, password) {
+    try {
 
-        var entries = []
-        //remove name, active, type, currency, and id
-        var keys = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
-        for (let key of keys) {
-            var year = key.slice(key.length - 4);
-            var month = key.slice(0, key.length - 4);
-            if (month.length == 1) month = '0' + month
+        var headers = new Headers();
+        headers.append("Authorization", `Basic ${btoa(username+":"+password)}`);
+        const res = await fetch(URL, { method: "GET",headers:headers })
+        const data = await res.json();
+        for (let account of data.copyOfMonthlyBalance) {
+
+            var entries = []
+            //remove name, active, type, currency, and id
+            var keys = Object.keys(account).filter((val) => val != 'name' && val != "active" && val != "type" && val != 'currency' && val != "id")
+            for (let key of keys) {
+                var year = key.slice(key.length - 4);
+                var month = key.slice(0, key.length - 4);
+                if (month.length == 1) month = '0' + month
 
 
-            entries.push({
-                amount: account[key] != '' ? parseFloat(account[key]) : 0,
-                year: parseInt(year),
-                month: parseInt(month),
-                index: parseInt(year + month),
-                title: `${month} - ${year}`
-            })
-            delete account[key]
+                entries.push({
+                    amount: account[key] != '' ? parseFloat(account[key]) : 0,
+                    year: parseInt(year),
+                    month: parseInt(month),
+                    index: parseInt(year + month),
+                    title: `${month} - ${year}`
+                })
+                delete account[key]
+            }
+            account['entries'] = entries.sort((a, b) => (b.index - a.index))
         }
-        account['entries'] = entries.sort((a, b) => (b.index - a.index))
+        return data.copyOfMonthlyBalance;
     }
-    return data.copyOfMonthlyBalance;
+    catch(e){
+        return undefined;
+    }
 }
 
 async function getRate(month, year, from, to) {
@@ -1366,8 +1373,8 @@ async function buildSummary(data) {
                 title: 'TOTAL',
                 entries: []
             }
-        ], 
-        proporsion:[
+        ],
+        proporsion: [
             /**
              * {
              *  account:'OCBC'
@@ -1479,35 +1486,35 @@ async function buildSummary(data) {
      * Proporsion Conversion
      */
 
-    for(let account of data){
+    for (let account of data) {
         //only show that is active
-        if(account.active == 'No') continue;
-        
+        if (account.active == 'No') continue;
+
         entry = {
-            account:account.name,
-            amount:account.entries[0].amount
+            account: account.name,
+            amount: account.entries[0].amount
         }
 
-        if(account.currency!= MAIN_CURRENCY){
-            rate = await getRate(account.entries[0].month,account.entries[0].year,account.currency,MAIN_CURRENCY);
+        if (account.currency != MAIN_CURRENCY) {
+            rate = await getRate(account.entries[0].month, account.entries[0].year, account.currency, MAIN_CURRENCY);
             amout = account.entries[0].amount
-            entry['conversion'] =  rate* amout;
+            entry['conversion'] = rate * amout;
         }
-        else{
+        else {
             entry['conversion'] = account.entries[0].amount
         }
 
-        entry['percentage'] = entry.conversion * 100/mainSummary.entries[0].amount;
+        entry['percentage'] = entry.conversion * 100 / mainSummary.entries[0].amount;
         summary.proporsion.push(entry)
-        
+
     }
 
-    summary.proporsion = summary.proporsion.sort((a,b)=>b.conversion - a.conversion)
+    summary.proporsion = summary.proporsion.sort((a, b) => b.conversion - a.conversion)
 
     /**
      * End Proporsion Conversion
      */
-    
+
     return summary;
 }
 
@@ -1664,7 +1671,7 @@ function displayTrendChart(summary) {
             labels: mainTrend.entries.map((val) => `${val.month} - ${val.year}`),
             datasets: currencyTrends.map((trend) => {
                 return {
-                    type:trend.main?'line':'bar',
+                    type: trend.main ? 'line' : 'bar',
                     label: trend.title,
                     data: trend.entries.map((val) => trend.main ? val.amount : val.conversion)
                 }
@@ -1680,36 +1687,43 @@ function displayTrendChart(summary) {
     });
 }
 
-function displayProportionChart(summary){
+function displayProportionChart(summary) {
     const ctx = document.getElementById('proportionChart');
 
     proporsions = JSON.parse(JSON.stringify(summary.proporsion));
     new Chart(ctx, {
-        type:'pie',
+        type: 'pie',
         data: {
-            labels: proporsions.map((val)=>`${val.account} - ${val.percentage.toFixed(2)}%`),
+            labels: proporsions.map((val) => `${val.account} - ${val.percentage.toFixed(2)}%`),
             datasets: [
                 {
-                    data:proporsions.map((val)=>val.conversion)
+                    data: proporsions.map((val) => val.conversion)
                 }
             ]
         }
-    
+
     });
 }
 
+
+
+
 async function main() {
-    console.log("Starting the main script")
-    var data = await fetchData();
-    console.log(data)
-    var summary = await buildSummary(data)
-    console.log(summary)
-    displayAccountTable(data)
-    displayTrendTable(summary);
-    displayTrendChart(summary)
-    displayProportionChart(summary)
+   
 }
 
 $(document).ready(function () {
-    main()
+    $('#form').submit(async function (e) {
+        e.preventDefault()
+        var crendential = $("#form :input").serializeArray();
+        var data = await fetchData(crendential[0].value,crendential[1].value);
+        if(data){
+            $('#password-form').hide()
+            var summary = await buildSummary(data)
+            displayAccountTable(data)
+            displayTrendTable(summary);
+            displayTrendChart(summary)
+            displayProportionChart(summary)
+        }
+    })
 })
