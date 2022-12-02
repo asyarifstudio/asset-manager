@@ -1318,56 +1318,168 @@ async function fetchData() {
         for (let key of keys) {
             var year = key.slice(key.length - 4);
             var month = key.slice(0, key.length - 4);
-            if(month.length == 1) month = '0'+month
-            
+            if (month.length == 1) month = '0' + month
+
 
             entries.push({
-                amount:account[key]!=''?parseFloat(account[key]):undefined,
-                year:parseInt(year),
-                month:parseInt(month),
-                index:parseInt(year+month),
-                title:`${month} - ${year}`
+                amount: account[key] != '' ? parseFloat(account[key]) : 0,
+                year: parseInt(year),
+                month: parseInt(month),
+                index: parseInt(year + month),
+                title: `${month} - ${year}`
             })
             delete account[key]
         }
-        account['entries'] = entries.sort((a,b)=>(b.index - a.index))
+        account['entries'] = entries.sort((a, b) => (b.index - a.index))
     }
     return data.copyOfMonthlyBalance;
 }
 
+async function getRate(month, year, from, to) {
+    // var date = new Date(year,month)
+    // var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}`
+    // const res = await fetch(url,{method:'GET'})
+    // const data = await res.json();
+    // return data.rates[to];
+    return 10000
+}
 
-function displayTable(data) {
+async function buildSummary(data) {
+
+    var summary =
+    {
+        trend: [
+            {
+                main: true,
+                currency: 'IDR',
+                title: 'TOTAL',
+                entries: []
+            }
+        ]
+    }
+
+    //compute total
+    for (let account of data) {
+        currencySummary = summary.trend.find((val) => val.main == false && val.currency == account.currency);
+        mainSummary = summary.trend.find((val) => val.main);
+        if (!currencySummary) {
+            currencySummary = {
+                main: false,
+                currency: account.currency,
+                title: account.currency,
+                entries: []
+            }
+            summary.trend.push(currencySummary)
+        }
+
+        for (let entry of account.entries) {
+
+            summaryEntry = currencySummary.entries.find((val) => val.index == entry.index);
+            if (!summaryEntry) {
+                summaryEntry = {
+                    index: entry.index,
+                    month: entry.month,
+                    year: entry.year,
+                    amount: 0
+                }
+                currencySummary.entries.push(summaryEntry)
+            }
+
+            summaryEntry.amount += entry.amount
+
+        }
+
+        //compute the total in the main summary
+        for (let i = 0; i < currencySummary.entries.length; i++) {
+
+            //get the data needed
+            var cur = currencySummary.entries[i];
+            //compute conversion to target currency
+            if (currencySummary.currency != mainSummary.currency) {
+                cur['rate'] = await getRate(cur.month, cur.year, currencySummary.currency, mainSummary.currency)
+                cur['conversion'] = cur.amount * cur.rate;
+            }
+            else {
+                cur['conversion'] = cur.amount;
+            }
+            //add to main summary
+            var mainEntry = mainSummary.entries.find((val) => val.index == cur.index)
+            if (!mainEntry) {
+                mainEntry = {
+                    index: cur.index,
+                    month: cur.month,
+                    year: cur.year,
+                    amount: 0
+                }
+                mainSummary.entries.push(mainEntry)
+            }
+            mainEntry.amount += cur.conversion;
+        }
+
+       
+    }
+
+    for(let currencySummary of summary.trend){
+        for (let i = 0; i < currencySummary.entries.length; i++) {
+
+            //get the data needed
+            var cur = currencySummary.entries[i];
+            if (i < currencySummary.entries.length - 1) {
+                //only compute the non first index
+                var pre = currencySummary.entries[i + 1]
+                var first = currencySummary.entries[currencySummary.entries.length - 1];
+                var yearEntries = currencySummary.entries.filter((val) => val.year == cur.year);
+                var firstMonth = yearEntries[yearEntries.length - 1]
+    
+                //compute increment
+                cur['monthly'] = cur.amount - pre.amount;
+                cur['monthlyPer'] = cur['monthly'] * 100 / pre.amount
+                cur['yearToDate'] = cur.amount - firstMonth.amount;
+                cur['yearToDatePer'] = cur['yearToDate'] * 100 / firstMonth.amount
+                cur['total'] = cur.amount - first.amount;
+                cur['totalPer'] = cur['total'] * 100 / first.amount
+            }    
+    
+        }
+    }
+    
+
+    return summary;
+}
+
+
+function displayAccountTable(data) {
 
     var tableSource = JSON.parse(JSON.stringify(data))
 
     //initialize table
     var columns = [
-        {field:"name",title:"Name"},
-        {field:"active",title:"Active"},
-        {field:"type",title:"Type"},
-        {field:"currency",title:"Currency"},
+        { field: "name", title: "Name" },
+        { field: "active", title: "Active" },
+        { field: "type", title: "Type" },
+        { field: "currency", title: "Currency" },
     ]
 
     //see the data and sort by keys
-    for(let account of tableSource){
-        
-        for(let entry of account.entries){
+    for (let account of tableSource) {
+
+        for (let entry of account.entries) {
             //check if the year already exist in col
-            var year_col = columns.find((col)=> parseInt(col.title) == entry.year);
-            if(!year_col){
+            var year_col = columns.find((col) => parseInt(col.title) == entry.year);
+            if (!year_col) {
                 year_col = {
-                    title:`${entry.year}`,
-                    columns:[]
+                    title: `${entry.year}`,
+                    columns: []
                 }
                 columns.push(year_col);
             }
 
-            var month_col = year_col.columns.find((col)=>parseInt(col.field) == entry.index)
-            if(!month_col){
+            var month_col = year_col.columns.find((col) => parseInt(col.field) == entry.index)
+            if (!month_col) {
                 month_col = {
-                    field:`${entry.index}`,
-                    title:`${entry.month}`,
-                    formatter:"money"
+                    field: `${entry.index}`,
+                    title: `${entry.month}`,
+                    formatter: "money"
                 }
                 year_col.columns.push(month_col)
             }
@@ -1375,28 +1487,104 @@ function displayTable(data) {
     }
 
     //modify the data so it has proper field
-    for(let account of tableSource){
-        
-        for(let entry of account.entries){
+    for (let account of tableSource) {
+
+        for (let entry of account.entries) {
             account[entry.index] = entry.amount;
         }
-
         delete account.entries
     }
 
-    console.log(tableSource)
-    console.log(columns)
     new Tabulator("#maintable", {
         data: tableSource, //assign data to table
-        columns:columns
+        columns: columns
+    });
+}
+
+function displayTrendTable(summary) {
+
+    var trendSource = JSON.parse(JSON.stringify(summary.trend));
+
+
+    //initialize table
+    var columns = [
+        { field: "title", title: "Trend",width:200, }
+    ]
+
+    for (let currencyTrend of trendSource) {
+        for (let entry of currencyTrend.entries) {
+            //check if the year already exist in col
+            var year_col = columns.find((col) => parseInt(col.title) == entry.year);
+            if (!year_col) {
+                year_col = {
+                    title: `${entry.year}`,
+                    columns: []
+                }
+                columns.push(year_col);
+            }
+
+            var month_col = year_col.columns.find((col) => parseInt(col.field) == entry.index)
+            if (!month_col) {
+                month_col = {
+                    field: `${entry.index}`,
+                    title: `${entry.month}`,
+                    formatter: "money"
+                }
+                year_col.columns.push(month_col)
+            }
+        }
+    }
+
+
+    //modify the data so it has proper field
+    for (let currencyTrend of trendSource) {
+        currencyTrend['_children'] = [
+            {
+                'title': 'monthly'
+            },
+            {
+                'title': 'monthly %'
+            },
+            {
+                'title': 'year to date'
+            },
+            {
+                'title': 'year to date %'
+            },
+            {
+                'title': 'total'
+            },
+            {
+                'title': 'total %'
+            }
+        ]
+        for (let entry of currencyTrend.entries) {
+            currencyTrend[entry.index] = entry.amount;
+            currencyTrend['_children'][0][entry.index] = entry.monthly,
+            currencyTrend['_children'][1][entry.index] = entry.monthlyPer
+            currencyTrend['_children'][2][entry.index] = entry.yearToDate
+            currencyTrend['_children'][3][entry.index] = entry.yearToDatePer
+            currencyTrend['_children'][4][entry.index] = entry.total
+            currencyTrend['_children'][5][entry.index] = entry.totalPer
+        }
+        delete currencyTrend.entries
+    }
+    console.log(trendSource)
+    new Tabulator("#trendTable", {
+        data: trendSource, //assign data to table
+        columns: columns,
+        dataTree: true,
     });
 }
 
 async function main() {
     console.log("Starting the main script")
     var data = await fetchData();
-    
-    displayTable(data)
+    console.log(data)
+    var summary = await buildSummary(data)
+    console.log(summary)
+    displayAccountTable(data)
+    displayTrendTable(summary);
 }
 
 $(document).ready(function () {
