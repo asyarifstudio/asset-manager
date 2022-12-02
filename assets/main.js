@@ -1336,12 +1336,20 @@ async function fetchData() {
 }
 
 async function getRate(month, year, from, to) {
-    // var date = new Date(year,month)
-    // var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}`
-    // const res = await fetch(url,{method:'GET'})
-    // const data = await res.json();
-    // return data.rates[to];
-    return 10000
+    var date = new Date(year, month)
+    var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}`
+    if (localStorage.getItem(url)) {
+        return parseFloat(localStorage.getItem(url));
+    }
+    else {
+        const res = await fetch(url, { method: 'GET' })
+        const data = await res.json();
+        const rate = data.rates[to];
+        localStorage.setItem(url, rate);
+        return parseFloat(rate);
+    }
+
+    //return 10000
 }
 
 async function buildSummary(data) {
@@ -1357,11 +1365,10 @@ async function buildSummary(data) {
             }
         ]
     }
-
     //compute total
     for (let account of data) {
         currencySummary = summary.trend.find((val) => val.main == false && val.currency == account.currency);
-        mainSummary = summary.trend.find((val) => val.main);
+
         if (!currencySummary) {
             currencySummary = {
                 main: false,
@@ -1389,37 +1396,42 @@ async function buildSummary(data) {
 
         }
 
-        //compute the total in the main summary
-        for (let i = 0; i < currencySummary.entries.length; i++) {
 
-            //get the data needed
-            var cur = currencySummary.entries[i];
-            //compute conversion to target currency
+    }
+
+    //compute the total in the main summary
+    mainSummary = summary.trend.find((val) => val.main);
+    for (let currencySummary of summary.trend) {
+        if (currencySummary.main) continue;
+
+        for (let entry of currencySummary.entries) {
             if (currencySummary.currency != mainSummary.currency) {
-                cur['rate'] = await getRate(cur.month, cur.year, currencySummary.currency, mainSummary.currency)
-                cur['conversion'] = cur.amount * cur.rate;
+                entry['rate'] = await getRate(entry.month, entry.year, currencySummary.currency, mainSummary.currency)
+                entry['conversion'] = entry.amount * entry.rate;
             }
             else {
-                cur['conversion'] = cur.amount;
+                entry['conversion'] = entry.amount;
             }
+
             //add to main summary
-            var mainEntry = mainSummary.entries.find((val) => val.index == cur.index)
+            var mainEntry = mainSummary.entries.find((val) => val.index == entry.index)
             if (!mainEntry) {
                 mainEntry = {
-                    index: cur.index,
-                    month: cur.month,
-                    year: cur.year,
+                    index: entry.index,
+                    month: entry.month,
+                    year: entry.year,
                     amount: 0
                 }
                 mainSummary.entries.push(mainEntry)
             }
-            mainEntry.amount += cur.conversion;
+            mainEntry.amount += entry.conversion;
         }
 
-       
+
     }
 
-    for(let currencySummary of summary.trend){
+
+    for (let currencySummary of summary.trend) {
         for (let i = 0; i < currencySummary.entries.length; i++) {
 
             //get the data needed
@@ -1430,7 +1442,7 @@ async function buildSummary(data) {
                 var first = currencySummary.entries[currencySummary.entries.length - 1];
                 var yearEntries = currencySummary.entries.filter((val) => val.year == cur.year);
                 var firstMonth = yearEntries[yearEntries.length - 1]
-    
+
                 //compute increment
                 cur['monthly'] = cur.amount - pre.amount;
                 cur['monthlyPer'] = cur['monthly'] * 100 / pre.amount
@@ -1438,11 +1450,11 @@ async function buildSummary(data) {
                 cur['yearToDatePer'] = cur['yearToDate'] * 100 / firstMonth.amount
                 cur['total'] = cur.amount - first.amount;
                 cur['totalPer'] = cur['total'] * 100 / first.amount
-            }    
-    
+            }
+
         }
     }
-    
+
 
     return summary;
 }
@@ -1508,7 +1520,7 @@ function displayTrendTable(summary) {
 
     //initialize table
     var columns = [
-        { field: "title", title: "Trend",width:200, }
+        { field: "title", title: "Trend", width: 200, }
     ]
 
     for (let currencyTrend of trendSource) {
@@ -1537,7 +1549,7 @@ function displayTrendTable(summary) {
 
 
     //modify the data so it has proper field
-    mainTrend = trendSource.find((val)=>val.main);
+    mainTrend = trendSource.find((val) => val.main);
     for (let currencyTrend of trendSource) {
         currencyTrend['_children'] = [
             {
@@ -1560,34 +1572,59 @@ function displayTrendTable(summary) {
             }
         ]
 
-        if(currencyTrend.currency != mainTrend.currency){
+        if (currencyTrend.currency != mainTrend.currency) {
             currencyTrend['_children'].push(
                 {
                     'title': 'rate'
                 }
             )
         }
-        
+
         for (let entry of currencyTrend.entries) {
             currencyTrend[entry.index] = entry.amount;
-            currencyTrend['_children'][0][entry.index] = entry.monthly,
+            currencyTrend['_children'][0][entry.index] = entry.monthly
             currencyTrend['_children'][1][entry.index] = entry.monthlyPer
             currencyTrend['_children'][2][entry.index] = entry.yearToDate
             currencyTrend['_children'][3][entry.index] = entry.yearToDatePer
             currencyTrend['_children'][4][entry.index] = entry.total
             currencyTrend['_children'][5][entry.index] = entry.totalPer
 
-            if(currencyTrend.currency != mainTrend.currency){
+            if (currencyTrend.currency != mainTrend.currency) {
                 currencyTrend['_children'][6][entry.index] = entry.rate
             }
         }
         delete currencyTrend.entries
     }
-    console.log(trendSource)
     new Tabulator("#trendTable", {
         data: trendSource, //assign data to table
         columns: columns,
         dataTree: true,
+    });
+}
+
+function displayTrendChart(summary) {
+    const ctx = document.getElementById('trendChart');
+
+    currencyTrends = JSON.parse(JSON.stringify(summary.trend));
+    mainTrend = currencyTrends.find((val) => val.main)
+    new Chart(ctx, {
+        data: {
+            labels: mainTrend.entries.map((val) => `${val.month} - ${val.year}`),
+            datasets: currencyTrends.map((trend) => {
+                return {
+                    type:trend.main?'line':'bar',
+                    label: trend.title,
+                    data: trend.entries.map((val) => trend.main ? val.amount : val.conversion)
+                }
+            })
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
     });
 }
 
@@ -1599,6 +1636,7 @@ async function main() {
     console.log(summary)
     displayAccountTable(data)
     displayTrendTable(summary);
+    displayTrendChart(summary)
 }
 
 $(document).ready(function () {
