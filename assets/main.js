@@ -200,6 +200,7 @@ async function buildSummary(data) {
         }
 
         entry['percentage'] = entry.conversion * 100 / mainSummary.entries[0].amount;
+        if(!entry['percentage']) entry['percentage'] = 0.0
         summary.proporsion.push(entry)
 
     }
