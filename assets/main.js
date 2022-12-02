@@ -1,12 +1,6 @@
 
 
 const URL = "https://api.sheety.co/a5bb71fdb9384d8f554ceed86a2f3c28/financialStatus/copyOfMonthlyBalance"
-var headers = new Headers();
-headers.append("Authorization", "Basic c3lhcmlmOnNheWFrYW11");
-
-
-
-
 const MAIN_CURRENCY = 'IDR'
 
 async function fetchData(username, password) {
