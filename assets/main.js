@@ -1306,6 +1306,8 @@ const DUMMY = {
     ]
 }
 
+const MAIN_CURRENCY = 'IDR'
+
 async function fetchData() {
     // const res = await fetch(URL, {method:"GET"})
     // const data = await res.json();
@@ -1338,13 +1340,14 @@ async function fetchData() {
 async function getRate(month, year, from, to) {
     var date = new Date(year, month)
     var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}`
-    if (localStorage.getItem(url)) {
-        return parseFloat(localStorage.getItem(url));
+    var rate = localStorage.getItem(url)
+    if (rate) {
+        return parseFloat(rate);
     }
     else {
         const res = await fetch(url, { method: 'GET' })
         const data = await res.json();
-        const rate = data.rates[to];
+        rate = data.rates[to];
         localStorage.setItem(url, rate);
         return parseFloat(rate);
     }
@@ -1359,13 +1362,25 @@ async function buildSummary(data) {
         trend: [
             {
                 main: true,
-                currency: 'IDR',
+                currency: MAIN_CURRENCY,
                 title: 'TOTAL',
                 entries: []
             }
+        ], 
+        proporsion:[
+            /**
+             * {
+             *  account:'OCBC'
+             *  amount:9939,
+             *  conversion:100000
+             *
+             * }
+             */
         ]
     }
-    //compute total
+    /**
+     * Trend Computation
+     */
     for (let account of data) {
         currencySummary = summary.trend.find((val) => val.main == false && val.currency == account.currency);
 
@@ -1455,7 +1470,44 @@ async function buildSummary(data) {
         }
     }
 
+    /**
+     * End of Trend Computation
+     */
 
+
+    /**
+     * Proporsion Conversion
+     */
+
+    for(let account of data){
+        //only show that is active
+        if(account.active == 'No') continue;
+        
+        entry = {
+            account:account.name,
+            amount:account.entries[0].amount
+        }
+
+        if(account.currency!= MAIN_CURRENCY){
+            rate = await getRate(account.entries[0].month,account.entries[0].year,account.currency,MAIN_CURRENCY);
+            amout = account.entries[0].amount
+            entry['conversion'] =  rate* amout;
+        }
+        else{
+            entry['conversion'] = account.entries[0].amount
+        }
+
+        entry['percentage'] = entry.conversion * 100/mainSummary.entries[0].amount;
+        summary.proporsion.push(entry)
+        
+    }
+
+    summary.proporsion = summary.proporsion.sort((a,b)=>b.conversion - a.conversion)
+
+    /**
+     * End Proporsion Conversion
+     */
+    
     return summary;
 }
 
@@ -1628,6 +1680,24 @@ function displayTrendChart(summary) {
     });
 }
 
+function displayProportionChart(summary){
+    const ctx = document.getElementById('proportionChart');
+
+    proporsions = JSON.parse(JSON.stringify(summary.proporsion));
+    new Chart(ctx, {
+        type:'pie',
+        data: {
+            labels: proporsions.map((val)=>`${val.account} - ${val.percentage.toFixed(2)}%`),
+            datasets: [
+                {
+                    data:proporsions.map((val)=>val.conversion)
+                }
+            ]
+        }
+    
+    });
+}
+
 async function main() {
     console.log("Starting the main script")
     var data = await fetchData();
@@ -1637,6 +1707,7 @@ async function main() {
     displayAccountTable(data)
     displayTrendTable(summary);
     displayTrendChart(summary)
+    displayProportionChart(summary)
 }
 
 $(document).ready(function () {
