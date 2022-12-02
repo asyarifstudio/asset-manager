@@ -1537,6 +1537,7 @@ function displayTrendTable(summary) {
 
 
     //modify the data so it has proper field
+    mainTrend = trendSource.find((val)=>val.main);
     for (let currencyTrend of trendSource) {
         currencyTrend['_children'] = [
             {
@@ -1558,6 +1559,15 @@ function displayTrendTable(summary) {
                 'title': 'total %'
             }
         ]
+
+        if(currencyTrend.currency != mainTrend.currency){
+            currencyTrend['_children'].push(
+                {
+                    'title': 'rate'
+                }
+            )
+        }
+        
         for (let entry of currencyTrend.entries) {
             currencyTrend[entry.index] = entry.amount;
             currencyTrend['_children'][0][entry.index] = entry.monthly,
@@ -1566,6 +1576,10 @@ function displayTrendTable(summary) {
             currencyTrend['_children'][3][entry.index] = entry.yearToDatePer
             currencyTrend['_children'][4][entry.index] = entry.total
             currencyTrend['_children'][5][entry.index] = entry.totalPer
+
+            if(currencyTrend.currency != mainTrend.currency){
+                currencyTrend['_children'][6][entry.index] = entry.rate
+            }
         }
         delete currencyTrend.entries
     }
