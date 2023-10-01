@@ -41,7 +41,7 @@ async function fetchData(username, password) {
 
 async function getRate(month, year, from, to) {
     var date = new Date(year, month)
-    var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}`
+    var url = `https://api.exchangerate.host/${date.toISOString().split('T')[0]}?base=${from}&symbols=${to}&access_key=ecc857c1e081e6ecc71f438fd24ca9f8`
     var rate = localStorage.getItem(url)
     if (rate) {
         return rate
